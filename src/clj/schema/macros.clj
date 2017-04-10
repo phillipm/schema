@@ -33,10 +33,10 @@
 (defn pretty-exception-info
   "Proxy of ExceptionInfo that pretty prints data"
   [message data]
-  (proxy [clojure.lang.ExceptionInfo] [message data]
-    (toString [] (str "clojure.lang.ExceptionInfo: "
-                      (proxy-super getMessage) " "
-                      (with-out-str (clojure.pprint/pprint (proxy-super getData)))))))
+  `(proxy [clojure.lang.ExceptionInfo] [~message ~data]
+     (toString [] (str "clojure.lang.ExceptionInfo: "
+                       (proxy-super getMessage) " "
+                       (with-out-str (clojure.pprint/pprint (proxy-super getData)))))))
 
 (defmacro error!
   "Generate a cross-platform exception appropriate to the macroexpansion context"
@@ -48,7 +48,7 @@
      (let [m (merge {:type :schema.core/error} m)]
        `(if-cljs
          (throw (ex-info ~s ~m))
-         (throw (pretty-exception-info ~(with-meta s `{:tag java.lang.String}) ~m))))))
+         (throw ~(pretty-exception-info (with-meta s `{:tag java.lang.String}) m))))))
 
 (defmacro safe-get
   "Like get but throw an exception if not found.  A macro just to work around cljx function
